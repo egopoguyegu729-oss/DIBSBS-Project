@@ -355,6 +355,7 @@ function setupAdminPage(account) {
     adminUserId = account.session.user.id;
     loadPeople();
 }
+setupLibrary(account);
 // ===== 7. Start =====
 (async function init() {
     const account = await getAccount();
@@ -382,4 +383,5 @@ function setupAdminPage(account) {
         navigation.appendChild(link);
     }
     setupAdminPage(account);
+    setupLibrary(account);
 })();

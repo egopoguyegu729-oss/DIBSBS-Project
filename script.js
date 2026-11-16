@@ -355,7 +355,7 @@ function setupAdminPage(account) {
     adminUserId = account.session.user.id;
     loadPeople();
 }
-setupLibrary(account);
+
 // ===== Library page =====
 const LIBRARY_BUCKET = "library-files";
 const MAX_LIBRARY_MB = 50;

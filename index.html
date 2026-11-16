@@ -30,7 +30,28 @@
     </nav>
 
     <main id="home">
+<section id="account">
+    <div id="login-box" class="content-card">
+        <h3>Sign in</h3>
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+        <button id="login-btn" class="primary-btn">Sign in</button>
+        <p id="login-msg"></p>
+    </div>
 
+    <div id="user-box" class="content-card" hidden>
+        <small id="user-label"></small>
+        <button id="logout-btn" class="primary-btn">Sign out</button>
+    </div>
+
+    <form id="post-form" class="content-card" hidden>
+        <h3>Post an announcement</h3>
+        <input id="post-title" placeholder="Title" required>
+        <textarea id="post-body" placeholder="Message" rows="4" required></textarea>
+        <button type="submit" class="primary-btn">Post</button>
+        <p id="post-msg"></p>
+    </form>
+</section>
         <section class="hero">
             <span class="eyebrow">YOUR SCHOOL. ONE COMMUNITY.</span>
 

@@ -181,7 +181,100 @@ function setupLoginPage() {
 
     renderLoginPage();
 }
+// ===== Admin page =====
+let adminUserId = null;
 
+function makeButton(label, cls, onClick) {
+    const b = document.createElement("button");
+    b.className = cls;
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+}
+
+async function updateProfile(id, changes) {
+    const { error } = await db.from("profiles").update(changes).eq("id", id);
+    if (error) alert("Could not update this account.");
+    loadPeople();
+}
+
+function personCard(p, buttons) {
+    const card = document.createElement("article");
+    card.className = "content-card";
+    card.style.marginBottom = "12px";
+
+    const name = document.createElement("h3");
+    name.textContent = p.full_name || "(no name)";
+    const email = document.createElement("p");
+    email.textContent = p.email || "";
+    const pill = document.createElement("span");
+    pill.className = "status-pill";
+    pill.textContent = p.approved ? p.role : "pending";
+
+    const row = document.createElement("div");
+    row.style.marginTop = "10px";
+    buttons.forEach(b => row.appendChild(b));
+
+    card.append(name, email, pill, row);
+    return card;
+}
+
+async function loadPeople() {
+    const pendingList = document.getElementById("pending-list");
+    const approvedList = document.getElementById("approved-list");
+
+    const { data, error } = await db.from("profiles")
+        .select("id, full_name, email, role, approved, created_at")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        pendingList.textContent = "Could not load people.";
+        return;
+    }
+
+    pendingList.innerHTML = "";
+    approvedList.innerHTML = "";
+    const pending = data.filter(p => !p.approved);
+    const approved = data.filter(p => p.approved);
+    document.getElementById("pending-count").textContent = pending.length;
+    document.getElementById("approved-count").textContent = approved.length;
+
+    if (!pending.length) pendingList.textContent = "No one is waiting.";
+
+    pending.forEach(p => {
+        pendingList.appendChild(personCard(p, [
+            makeButton("Approve as student", "primary-btn",
+                () => updateProfile(p.id, { approved: true, role: "student" })),
+            makeButton("Approve as teacher", "secondary-btn",
+                () => updateProfile(p.id, { approved: true, role: "teacher" }))
+        ]));
+    });
+
+    approved.forEach(p => {
+        const buttons = [];
+        if (p.id !== adminUserId && p.role !== "admin") {
+            buttons.push(makeButton(
+                p.role === "student" ? "Make teacher" : "Make student",
+                "secondary-btn",
+                () => updateProfile(p.id, { role: p.role === "student" ? "teacher" : "student" })
+            ));
+            buttons.push(makeButton("Remove access", "secondary-btn",
+                () => updateProfile(p.id, { approved: false, role: "student" })));
+        }
+        approvedList.appendChild(personCard(p, buttons));
+    });
+}
+
+function setupAdminPage(account) {
+    if (!document.getElementById("pending-list")) return;
+    const isAdmin = account.profile && account.profile.role === "admin" && account.profile.approved;
+    if (!isAdmin) {
+        window.location.replace("index.html");
+        return;
+    }
+    adminUserId = account.session.user.id;
+    loadPeople();
+}
 // ===== 7. Start =====
 (async function init() {
     const account = await getAccount();
@@ -199,4 +292,14 @@ function setupLoginPage() {
     document.getElementById("account-link").textContent =
         account.session ? "My account" : "Sign in";
     setupPostForm(account);
+
+    const isAdmin = account.profile && account.profile.role === "admin" && approved;
+    if (isAdmin) {
+        const link = document.createElement("a");
+        link.href = "admin.html";
+        link.textContent = "Admin";
+        if (currentPage === "admin.html") link.classList.add("current");
+        navigation.appendChild(link);
+    }
+    setupAdminPage(account);
 })();

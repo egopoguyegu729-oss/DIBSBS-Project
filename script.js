@@ -38,6 +38,8 @@ async function getAccount() {
 }
 
 // ===== 4. Announcements list =====
+const FILE_BUCKET = "announcement-files";
+
 async function loadAnnouncements() {
     const list = document.getElementById("announcement-list");
     if (!list) return;
@@ -57,6 +59,18 @@ async function loadAnnouncements() {
         list.textContent = "No announcements yet.";
         return;
     }
+
+    // Get temporary secure links for all attached files at once
+    const paths = data.filter(i => i.file_path).map(i => i.file_path);
+    const urls = {};
+    if (paths.length) {
+        const { data: signed } = await db.storage
+            .from(FILE_BUCKET).createSignedUrls(paths, 3600);
+        (signed || []).forEach(s => {
+            if (s.signedUrl) urls[s.path] = s.signedUrl;
+        });
+    }
+
     data.forEach(item => {
         const card = document.createElement("article");
         card.className = "content-card";
@@ -64,18 +78,51 @@ async function loadAnnouncements() {
 
         const title = document.createElement("h3");
         title.textContent = item.title;
-        const body = document.createElement("p");
-        body.textContent = item.body;
+        card.appendChild(title);
+
+        if (item.body) {
+            const body = document.createElement("p");
+            body.textContent = item.body;
+            card.appendChild(body);
+        }
+
+        const url = item.file_path && urls[item.file_path];
+        if (url) {
+            if ((item.file_type || "").startsWith("image/")) {
+                const link = document.createElement("a");
+                link.href = url;
+                link.target = "_blank";
+                link.rel = "noopener";
+                const img = document.createElement("img");
+                img.src = url;
+                img.alt = item.file_name || "Attached image";
+                img.className = "attachment-img";
+                link.appendChild(img);
+                card.appendChild(link);
+            } else {
+                const link = document.createElement("a");
+                link.href = url;
+                link.target = "_blank";
+                link.rel = "noopener";
+                link.className = "primary-btn attachment-link";
+                link.textContent = "📎 " + (item.file_name || "Open file");
+                card.appendChild(link);
+            }
+        }
+
         const meta = document.createElement("small");
+        meta.style.display = "block";
         meta.textContent = (item.author || "School") + " · " +
             new Date(item.created_at).toLocaleDateString();
+        card.appendChild(meta);
 
-        card.append(title, body, meta);
         list.appendChild(card);
     });
 }
 
 // ===== 5. Post form (announcements page, staff only) =====
+const MAX_FILE_MB = 10;
+
 function setupPostForm(account) {
     const form = document.getElementById("post-form");
     if (!form) return;
@@ -87,12 +134,44 @@ function setupPostForm(account) {
         const msg = document.getElementById("post-msg");
         const title = document.getElementById("post-title");
         const body = document.getElementById("post-body");
+        const fileInput = document.getElementById("post-file");
+        const button = form.querySelector("button[type=submit]");
+        const file = fileInput.files[0];
+
+        if (file && file.size > MAX_FILE_MB * 1024 * 1024) {
+            msg.textContent = "That file is too large. The limit is " + MAX_FILE_MB + " MB.";
+            return;
+        }
+
+        button.disabled = true;
+        msg.textContent = file ? "Uploading..." : "Posting...";
+
+        let file_path = null, file_name = null, file_type = null;
+
+        if (file) {
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+            file_path = Date.now() + "-" + safeName;
+            const { error: uploadError } = await db.storage
+                .from(FILE_BUCKET)
+                .upload(file_path, file, { contentType: file.type });
+
+            if (uploadError) {
+                msg.textContent = "Could not upload the file. Use a photo, PDF or Word/PowerPoint file under 10 MB.";
+                button.disabled = false;
+                return;
+            }
+            file_name = file.name;
+            file_type = file.type;
+        }
 
         const { error } = await db.from("announcements").insert({
             title: title.value.trim(),
             body: body.value.trim(),
-            author: (account.profile && account.profile.full_name) || "School Administration"
+            author: (account.profile && account.profile.full_name) || "School Administration",
+            file_path, file_name, file_type
         });
+
+        button.disabled = false;
 
         if (error) {
             msg.textContent = "Could not post. You may not have permission.";
@@ -101,6 +180,7 @@ function setupPostForm(account) {
         msg.textContent = "Posted!";
         title.value = "";
         body.value = "";
+        fileInput.value = "";
         loadAnnouncements();
     });
 }

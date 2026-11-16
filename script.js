@@ -1,4 +1,11 @@
-setTimeout(() => document.body.classList.add("ready"), 4000);
+setTimeout(() => {
+    if (document.body.classList.contains("ready")) return;
+    if (location.pathname.endsWith("login.html")) {
+        document.body.classList.add("ready");
+    } else {
+        window.location.replace("login.html");
+    }
+}, 6000);
 // ===== 1. Supabase connection (paste YOUR values here) =====
 const SUPABASE_URL = "https://izzzjlmdazgybalsijps.supabase.co";
 const SUPABASE_KEY = "sb_publishable_M1jQWmFZX_yQNZo9izhX-g_Io5MXEWG";
@@ -576,4 +583,11 @@ function setupLibrary(account) {
     }
     setupAdminPage(account);
     setupLibrary(account);
-})();
+})().catch(err => {
+    console.error(err);
+    if (location.pathname.endsWith("login.html")) {
+        document.body.classList.add("ready");
+    } else {
+        window.location.replace("login.html");
+    }
+});

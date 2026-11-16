@@ -101,7 +101,22 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
     await db.auth.signOut();
     refreshAccount();
 });
-
+document.getElementById("signup-btn").addEventListener("click", async () => {
+    const msg = document.getElementById("login-msg");
+    const name = document.getElementById("signup-name").value.trim();
+    if (!name) {
+        msg.textContent = "Please enter your full name.";
+        return;
+    }
+    msg.textContent = "Creating account...";
+    const { error } = await db.auth.signUp({
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value,
+        options: { data: { full_name: name } }
+    });
+    msg.textContent = error ? error.message : "";
+    if (!error) refreshAccount();
+});
 // ---- Post announcement ----
 document.getElementById("post-form").addEventListener("submit", async (e) => {
     e.preventDefault();

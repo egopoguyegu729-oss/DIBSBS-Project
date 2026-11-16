@@ -77,9 +77,14 @@ async function refreshAccount() {
     currentProfile = profile;
     loginBox.hidden = true;
     userBox.hidden = false;
+    let status = "";
+    if (profile) {
+        status = profile.approved
+            ? " (" + profile.role + ")"
+            : " - waiting for approval";
+    }
     document.getElementById("user-label").textContent =
-        "Signed in as " + session.user.email +
-        (profile ? " (" + profile.role + ")" : "");
+        "Signed in as " + session.user.email + status;
 
     const isStaff = profile && profile.approved &&
         (profile.role === "teacher" || profile.role === "admin");

@@ -184,10 +184,18 @@ function setupLoginPage() {
 
 // ===== 7. Start =====
 (async function init() {
+    const account = await getAccount();
+    const onLoginPage = currentPage === "login.html";
+    const approved = account.profile && account.profile.approved;
+
+    if (!onLoginPage && (!account.session || !approved)) {
+        window.location.replace("login.html");
+        return;
+    }
+
+    document.body.classList.add("ready");
     loadAnnouncements();
     setupLoginPage();
-
-    const account = await getAccount();
     document.getElementById("account-link").textContent =
         account.session ? "My account" : "Sign in";
     setupPostForm(account);

@@ -340,3 +340,5 @@ button.secondary-btn {
     background: #192e50;
     color: #74b3ff;
 }
+body { visibility: hidden; }
+body.ready { visibility: visible; }

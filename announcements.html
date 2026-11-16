@@ -32,7 +32,9 @@
         <form id="post-form" class="content-card" hidden style="margin-bottom:25px;">
             <h3>Post an announcement</h3>
             <input id="post-title" placeholder="Title" required>
-            <textarea id="post-body" placeholder="Write your message" rows="4" required></textarea>
+            <textarea id="post-body" placeholder="Write your message (optional if you attach a file)" rows="4"></textarea>
+            <p class="form-msg">Attach a photo, PDF or document (optional, max 10 MB)</p>
+            <input id="post-file" type="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx">
             <button type="submit" class="primary-btn">Post announcement</button>
             <p id="post-msg" class="form-msg"></p>
         </form>

@@ -1,6 +1,7 @@
+setTimeout(() => document.body.classList.add("ready"), 4000);
 // ===== 1. Supabase connection (paste YOUR values here) =====
-const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL";
-const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY";
+const SUPABASE_URL = "https://izzzjlmdazgybalsijps.supabase.co";
+const SUPABASE_KEY = "sb_publishable_M1jQWmFZX_yQNZo9izhX-g_Io5MXEWG";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ===== 2. Menu (works on every page) =====

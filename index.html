@@ -1,8 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-<head class="topbar">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b1120">
@@ -12,143 +10,70 @@
 <body>
 
     <header class="topbar">
-        <div class="brand">
-    <img src="logo.jpg" alt="Ifa Boru school logo" class="brand-logo">
-    <div>DIBSBS<span>Connect</span></div>
-</div>
-
-        <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
-            ☰
-        </button>
+        <a href="index.html" class="brand" style="color:inherit;text-decoration:none;">
+            <img src="logo.jpg" alt="Ifa Boru school logo" class="brand-logo">
+            <div>DIBSBS<span>Connect</span></div>
+        </a>
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">☰</button>
     </header>
 
     <nav class="navigation" id="navigation">
-        <a href="#home">Home</a>
-        <a href="#announcements">Announcements</a>
-        <a href="#classes">Classes</a>
-        <a href="#resources">Resources</a>
+        <a href="index.html">Home</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="classes.html">Classes</a>
+        <a href="library.html">Library</a>
+        <a href="login.html" id="account-link">Sign in</a>
     </nav>
 
-    <main id="home">
-<section id="account">
-    <div id="login-box" class="content-card">
-    <h3>Sign in or create an account</h3>
-    <input id="signup-name" placeholder="Full name (new accounts only)">
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password (6+ characters)">
-    <button id="login-btn" class="primary-btn">Sign in</button>
-    <button id="signup-btn" class="primary-btn">Create account</button>
-    <p id="login-msg"></p>
-</div>
+    <main>
 
-    <div id="user-box" class="content-card" hidden>
-        <small id="user-label"></small>
-        <button id="logout-btn" class="primary-btn">Sign out</button>
-    </div>
-
-    <form id="post-form" class="content-card" hidden>
-        <h3>Post an announcement</h3>
-        <input id="post-title" placeholder="Title" required>
-        <textarea id="post-body" placeholder="Message" rows="4" required></textarea>
-        <button type="submit" class="primary-btn">Post</button>
-        <p id="post-msg"></p>
-    </form>
-</section>
         <section class="hero">
             <span class="eyebrow">YOUR SCHOOL. ONE COMMUNITY.</span>
-
-            <h1>Welcome to<br>
-                <span>DIBSBS Connect.</span>
-            </h1>
-
-            <p>
-                Connect with classmates, discover school updates
-                and access learning materials in one place.
-            </p>
-
-            <a href="#resources" class="primary-btn">
-                Explore learning →
-            </a>
+            <h1>Welcome to<br><span>DIBSBS Connect.</span></h1>
+            <p>Connect with classmates, discover school updates and access learning materials in one place.</p>
+            <a href="library.html" class="primary-btn">Explore learning →</a>
         </section>
 
         <section class="stats">
-            <div class="stat-card">
+            <a class="stat-card" href="announcements.html">
                 <span>📢</span>
                 <h2>Updates</h2>
                 <p>School news</p>
-            </div>
-
-            <div class="stat-card">
+            </a>
+            <a class="stat-card" href="classes.html">
                 <span>💬</span>
                 <h2>Classes</h2>
                 <p>Student communities</p>
-            </div>
-
-            <div class="stat-card">
+            </a>
+            <a class="stat-card" href="library.html">
                 <span>📚</span>
                 <h2>Library</h2>
                 <p>Learning materials</p>
-            </div>
+            </a>
         </section>
 
-        <section id="announcements">
+        <section>
             <div class="section-heading">
-                <h2>Announcements</h2>
-                <span class="section-tag">LATEST</span>
+                <h2>Latest announcements</h2>
+                <a class="more-link" href="announcements.html">See all</a>
             </div>
-
-            <div id="announcement-list">
-    <p>Loading announcements...</p>
-</div>
-        </section>
-
-        <section id="classes">
-            <div class="section-heading">
-                <h2>Your Classes</h2>
-                <span class="section-tag">COMMUNITY</span>
+            <div id="announcement-list" data-limit="3">
+                <p class="page-intro">Loading announcements...</p>
             </div>
-
-            <article class="content-card">
-                <span class="card-icon">🎓</span>
-                <h3>Class Community</h3>
-                <p>
-                    Your classroom discussions and group activities
-                    will appear here.
-                </p>
-                <span class="coming-soon">Coming soon</span>
-            </article>
-        </section>
-
-        <section id="resources">
-            <div class="section-heading">
-                <h2>Learning Resources</h2>
-                <span class="section-tag">LIBRARY</span>
-            </div>
-
-            <article class="content-card">
-                <span class="card-icon">📖</span>
-                <h3>Study Materials</h3>
-                <p>
-                    Find textbooks, worksheets, notes and other
-                    educational resources.
-                </p>
-                <span class="coming-soon">Coming soon</span>
-            </article>
         </section>
 
     </main>
 
     <footer>
         <div class="brand">
-            <img src="logo.jpg" alt="" class="brand-logo">.
-            <span>DIBSBS Connect</span>
+            <img src="logo.jpg" alt="" class="brand-logo">
+            <div>DIBSBS<span>Connect</span></div>
         </div>
         <p>Connecting students. Empowering learning.</p>
         <small>© 2026 DIBSBS Connect — Prototype</small>
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-

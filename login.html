@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1120">
+    <title>Sign in - DIBSBS Connect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="index.html" class="brand" style="color:inherit;text-decoration:none;">
+            <img src="logo.jpg" alt="Ifa Boru school logo" class="brand-logo">
+            <div>DIBSBS<span>Connect</span></div>
+        </a>
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </header>
+
+    <nav class="navigation" id="navigation">
+        <a href="index.html">Home</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="classes.html">Classes</a>
+        <a href="library.html">Library</a>
+        <a href="login.html" id="account-link">Sign in</a>
+    </nav>
+
+    <main>
+        <h1 class="page-title">Account</h1>
+        <p class="page-intro">Sign in, or create an account with your school email.</p>
+
+        <div id="login-box" class="content-card auth-card">
+            <h3>Sign in or create an account</h3>
+            <input id="signup-name" placeholder="Full name (new accounts only)" autocomplete="name">
+            <input id="email" type="email" placeholder="Email" autocomplete="email">
+            <input id="password" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+            <button id="login-btn" class="primary-btn">Sign in</button>
+            <button id="signup-btn" class="secondary-btn">Create account</button>
+            <p id="login-msg" class="form-msg"></p>
+        </div>
+
+        <div id="user-box" class="content-card auth-card" hidden>
+            <h3 id="user-name"></h3>
+            <p id="user-email"></p>
+            <span id="user-status" class="status-pill"></span>
+            <p id="user-note" class="form-msg"></p>
+            <button id="logout-btn" class="secondary-btn">Sign out</button>
+        </div>
+    </main>
+
+    <footer>
+        <div class="brand">
+            <img src="logo.jpg" alt="" class="brand-logo">
+            <div>DIBSBS<span>Connect</span></div>
+        </div>
+        <p>Connecting students. Empowering learning.</p>
+        <small>© 2026 DIBSBS Connect — Prototype</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

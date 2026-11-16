@@ -356,6 +356,198 @@ function setupAdminPage(account) {
     loadPeople();
 }
 setupLibrary(account);
+// ===== Library page =====
+const LIBRARY_BUCKET = "library-files";
+const MAX_LIBRARY_MB = 50;
+const GRADES = ["9", "10", "11", "12"];
+const SUBJECTS = [
+    "Mathematics", "English", "Physics", "Chemistry", "Biology",
+    "Geography", "History", "Civics", "Economics", "ICT",
+    "Amharic", "Afaan Oromoo", "Other"
+];
+
+let libraryItems = [];
+let libraryUrls = {};
+let libraryIsAdmin = false;
+
+function fillSelect(select, values, labelFn) {
+    values.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = labelFn ? labelFn(v) : v;
+        select.appendChild(option);
+    });
+}
+
+async function loadLibrary() {
+    const list = document.getElementById("library-list");
+    const { data, error } = await db.from("resources")
+        .select("*").order("created_at", { ascending: false });
+
+    if (error) {
+        list.textContent = "Could not load the library. Refresh and try again.";
+        return;
+    }
+
+    libraryItems = data;
+    libraryUrls = {};
+    if (data.length) {
+        const { data: signed } = await db.storage
+            .from(LIBRARY_BUCKET)
+            .createSignedUrls(data.map(i => i.file_path), 3600);
+        (signed || []).forEach(s => {
+            if (s.signedUrl) libraryUrls[s.path] = s.signedUrl;
+        });
+    }
+    renderLibrary();
+}
+
+async function deleteResource(item) {
+    if (!confirm('Delete "' + item.title + '" from the library?')) return;
+    const { error } = await db.from("resources").delete().eq("id", item.id);
+    if (error) {
+        alert("Could not delete this item.");
+        return;
+    }
+    await db.storage.from(LIBRARY_BUCKET).remove([item.file_path]);
+    loadLibrary();
+}
+
+function renderLibrary() {
+    const list = document.getElementById("library-list");
+    const grade = document.getElementById("filter-grade").value;
+    const subject = document.getElementById("filter-subject").value;
+    const search = document.getElementById("lib-search").value.trim().toLowerCase();
+
+    const shown = libraryItems.filter(i =>
+        (!grade || i.grade === grade) &&
+        (!subject || i.subject === subject) &&
+        (!search || i.title.toLowerCase().includes(search))
+    );
+
+    document.getElementById("lib-count").textContent =
+        shown.length + (shown.length === 1 ? " item" : " items");
+    list.innerHTML = "";
+
+    if (!shown.length) {
+        list.textContent = libraryItems.length
+            ? "Nothing matches your filters."
+            : "The library is empty. Teachers can add the first material.";
+        return;
+    }
+
+    shown.forEach(item => {
+        const card = document.createElement("article");
+        card.className = "content-card";
+        card.style.marginBottom = "12px";
+
+        const tag = document.createElement("span");
+        tag.className = "category";
+        tag.textContent = item.subject + " · Grade " + item.grade;
+
+        const title = document.createElement("h3");
+        title.textContent = item.title;
+        card.append(tag, title);
+
+        if (item.description) {
+            const desc = document.createElement("p");
+            desc.textContent = item.description;
+            card.appendChild(desc);
+        }
+
+        const row = document.createElement("div");
+        const url = libraryUrls[item.file_path];
+        if (url) {
+            const open = document.createElement("a");
+            open.href = url;
+            open.target = "_blank";
+            open.rel = "noopener";
+            open.className = "primary-btn attachment-link";
+            open.textContent = "📎 " + item.file_name;
+            row.appendChild(open);
+        }
+        if (libraryIsAdmin) {
+            row.appendChild(makeButton("Delete", "secondary-btn",
+                () => deleteResource(item)));
+        }
+        card.appendChild(row);
+        list.appendChild(card);
+    });
+}
+
+function setupLibrary(account) {
+    if (!document.getElementById("library-list")) return;
+
+    libraryIsAdmin = !!account.profile && account.profile.role === "admin" &&
+        account.profile.approved;
+
+    fillSelect(document.getElementById("filter-grade"), GRADES, g => "Grade " + g);
+    fillSelect(document.getElementById("filter-subject"), SUBJECTS);
+    fillSelect(document.getElementById("lib-grade"), GRADES, g => "Grade " + g);
+    fillSelect(document.getElementById("lib-subject"), SUBJECTS);
+
+    ["filter-grade", "filter-subject"].forEach(id =>
+        document.getElementById(id).addEventListener("change", renderLibrary));
+    document.getElementById("lib-search").addEventListener("input", renderLibrary);
+
+    const form = document.getElementById("library-form");
+    form.hidden = !account.isStaff;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById("lib-msg");
+        const button = form.querySelector("button[type=submit]");
+        const fileInput = document.getElementById("lib-file");
+        const file = fileInput.files[0];
+
+        if (!file) {
+            msg.textContent = "Choose a file to upload.";
+            return;
+        }
+        if (file.size > MAX_LIBRARY_MB * 1024 * 1024) {
+            msg.textContent = "That file is too large. The limit is " + MAX_LIBRARY_MB + " MB.";
+            return;
+        }
+
+        button.disabled = true;
+        msg.textContent = "Uploading... please keep this page open.";
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const file_path = Date.now() + "-" + safeName;
+
+        const { error: uploadError } = await db.storage
+            .from(LIBRARY_BUCKET)
+            .upload(file_path, file, { contentType: file.type });
+
+        if (uploadError) {
+            msg.textContent = "Could not upload. Use a PDF, Word, PowerPoint or image under 50 MB.";
+            button.disabled = false;
+            return;
+        }
+
+        const { error } = await db.from("resources").insert({
+            title: document.getElementById("lib-title").value.trim(),
+            subject: document.getElementById("lib-subject").value,
+            grade: document.getElementById("lib-grade").value,
+            description: document.getElementById("lib-desc").value.trim() || null,
+            file_path,
+            file_name: file.name,
+            file_type: file.type
+        });
+
+        button.disabled = false;
+
+        if (error) {
+            msg.textContent = "Could not save. You may not have permission.";
+            return;
+        }
+        msg.textContent = "Added to the library!";
+        form.reset();
+        loadLibrary();
+    });
+
+    loadLibrary();
+}
 // ===== 7. Start =====
 (async function init() {
     const account = await getAccount();
